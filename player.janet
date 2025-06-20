@@ -7,8 +7,7 @@
   (var image (jaylib/load-image-1 img-path))
   (var texture (jaylib/load-texture-from-image image))
   (jaylib/unload-image image)
-  texture
-  )
+  texture)
 
 (defn init []
   (set texture (load-image-to-texture "resources/images/dog.png"))
@@ -18,6 +17,5 @@
   (jaylib/draw-texture-ex texture [x y] 0  1 :white))
 
 (defn collides-with [object]
-  (print "COLLIDING WITH" object)
   )
 

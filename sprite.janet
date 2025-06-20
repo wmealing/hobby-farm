@@ -11,9 +11,9 @@
   )
 
 (defn init []
-  (print "SPRITE INIT")
   (set chicken-texture (load-image-to-texture "resources/images/chicken.png")))
 
 (defn draw [x y]
-    (jaylib/draw-texture-ex chicken-texture [x y] 0  0.25 :white))
+  #(jaylib/draw-texture-ex chicken-texture [x y] 0  0.25 :white)
+  )
 
