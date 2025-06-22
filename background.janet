@@ -25,7 +25,7 @@
 
 (defn load-tile-cache [map-data image-path]
 
-  (print "LOAD TILE CACHE")
+
   (def arr @[])
 
   (def full-image (jaylib/load-image-1 image-path))
@@ -75,18 +75,14 @@
     (var map-val (get layer-0 c))
     (def t (get tile-cache (- map-val 1)))
     
-    (print "MAP VAL: " (- map-val 1))
-    (print "C1: " c)
-    (print "T1: " t)
 
     (jaylib/draw-texture-ex t [(* i scale) (* j scale) ] 0 scale :ray-white)
     
-    (print "I * SCALE: " (* i scale))
 
-    (jaylib/draw-rectangle-lines (* i scale)
-				 (* j scale)
-				 (* tile-height scale)
-				 (* tile-height scale) :black)
+    # (jaylib/draw-rectangle-lines (* i scale)
+    # 				 (* j scale)
+    # 				 (* tile-height scale)
+    # 				 (* tile-height scale) :black)
 
     (++ c)
     
