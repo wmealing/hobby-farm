@@ -25,7 +25,6 @@
 
 (defn load-tile-cache [map-data image-path]
 
-
   (def arr @[])
 
   (def full-image (jaylib/load-image-1 image-path))
@@ -56,37 +55,36 @@
   (print "TILE CACHE SIZE: " (length tile-cache))
   )
 
-(defn draw []
+(defn draw [ ]
   (var c 0)
   (def scale 4)
-  (print "BG DRAWING DRAW")
 
-  (print "MAP WIDTH:  " map-width )
-  (print "MAP HEIGHT: " map-height)
-
-  (def layer-0 (-> (get map-data "layers")
+  (var layer-0 (-> (get map-data "layers")
 		   (get 0)
 		   (get "data")))
 
+  (var layer-1 (-> (get map-data "layers")
+		   (get 1)
+		   (get "data")))
+
+  (var layer-2 (-> (get map-data "layers")
+		   (get 2)
+		   (get "data")))
+
+  (var layers [layer-0 layer-1 ])
+  # this draws every tile, i xdont think i need it.
+
   (loop [j :range [0 (* tile-height map-height) tile-height ]
-	 i :range [0 (* tile-width map-width)  tile-width   ]
-	 ]
+	 i :range [0 (* tile-width map-width)  tile-width   ] ]
 
-    (var map-val (get layer-0 c))
-    (def t (get tile-cache (- map-val 1)))
-    
+	(each layer layers
+	  (var map-val (get layer c))
 
-    (jaylib/draw-texture-ex t [(* i scale) (* j scale) ] 0 scale :ray-white)
-    
-
-    # (jaylib/draw-rectangle-lines (* i scale)
-    # 				 (* j scale)
-    # 				 (* tile-height scale)
-    # 				 (* tile-height scale) :black)
-
-    (++ c)
-    
-    ))
+	  (if (not= map-val 0)
+	    (jaylib/draw-texture-ex (get tile-cache (- map-val 1))
+				    [(* i scale) (* j scale) ] 0 scale :ray-white)))
+	(++ c)
+	))
 
 
 

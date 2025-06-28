@@ -1,6 +1,7 @@
 (import jaylib :as "jaylib")
 
 (var texture :not-loaded)
+(var img-name :not-loaded)
 
 # probably should macro this.
 (defn load-image-to-texture [img-path]
@@ -9,12 +10,15 @@
   (jaylib/unload-image image)
   texture)
 
-(defn init []
-  (set texture (load-image-to-texture "resources/images/dog.png"))
+(defn init [ player ]
+  (var image-path (string/join ["resources/images/" (get player :image)]))
+  (set texture (load-image-to-texture image-path))
 )
 
-(defn draw [x y]
-  (jaylib/draw-texture-ex texture [x y] 0  1 :white))
+(defn draw [player]
+    (jaylib/draw-texture-ex texture [ (- (get-in player [:position :x]) 20 )
+				    (- (get-in player [:position :y]) 20 )
+				   ] 0  1 :white))
 
 (defn collides-with [object]
   )
