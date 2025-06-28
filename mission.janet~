@@ -1,0 +1,52 @@
+(import jaylib :as "jaylib")
+(use utils)
+
+# Table to hold the state of all current missions
+(var active-missions @{})
+(var completed-missions @{})
+
+# Function to start a mission by its ID
+(defn start-mission [id]
+    (print "Starting mission: " id)
+      (assoc-in active-missions [id :status] :active))
+    
+# Function to notify the mission system of a game event
+(defn notify [event-type event-data]
+  (each [id mission] active-missions
+    (each objective (mission :objectives)
+      # Logic to update objectives based on events
+      (match [(:type objective) event-type]
+        [:collect :item-collected]
+        (when (= (:item objective) (:item event-data))
+          (update-in (active-missions id) [:objectives 0 :current-amount] + (:amount
+									      event-data)))
+	
+        [:goto :player-moved]
+        (when (= (:area objective) (:area event-data))
+          (put-in (active-missions id) [:objectives 0 :completed] true))))))
+    
+   # Function to check for mission completion
+(defn update []
+  (each [id mission] active-missions
+    (var all-objectives-complete true)
+    (each objective (mission :objectives)
+      (case (:type objective)
+        :collect
+        (unless (>= (:current-amount objective) (:required-amount objective))
+          (set all-objectives-complete false))
+        :goto
+        (unless (:completed objective)
+          (set all-objectives-complete false))))
+    
+    (when all-objectives-complete
+      (print "Mission complete: " id)
+      (put-in (active-missions id) :status :completed)
+      # TODO: Grant rewards to the player
+      (put completed-missions id (active-missions id))
+      (put active-missions id nil))))
+
+# Function for the HUD to get mission info
+(defn get-active-mission-info []
+  # Return data formatted for your HUD to display
+  (map (fn [m] {:title (m :title) :objectives (m :objectives)}) (values active-missions)))
+
