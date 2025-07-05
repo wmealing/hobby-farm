@@ -1,4 +1,15 @@
-(def missions {:collect-eggs
+(def missions {:introduction
+	       {:status :incomplete
+                :title "Visit the farmer"
+                :description "say hello to the farmer, hes probably in his house"
+                :objectives
+                [{:type :goto
+		  :area :farmers-house}]
+                :rewards
+                [{:type :skill
+                  :skill :bark
+                  :amount 1}]}
+	       :collect-eggs
                {:id :collect-eggs
                 :title "Egg Hunt"
                 :description "Collect 5 eggs for the farmer's breakfast."
@@ -23,4 +34,5 @@
                   :completed false}]
                 :rewards
                 [{:type :reputation
-                  :points 10}]}})
+                  :points 10}]}
+	       })

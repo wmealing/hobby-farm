@@ -1,5 +1,5 @@
 (import jaylib :as "jaylib")
-(import json)
+(import spork/json)
 
 (var background-texture :not-loaded)
 (var tile-cache :not-loaded)
@@ -80,7 +80,7 @@
 	(each layer layers
 	  (var map-val (get layer c))
 
-	  (if (not= map-val 0)
+	  (if (not (= map-val 0))
 	    (jaylib/draw-texture-ex (get tile-cache (- map-val 1))
 				    [(* i scale) (* j scale) ] 0 scale :ray-white)))
 	(++ c)

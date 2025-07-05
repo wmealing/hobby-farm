@@ -17,9 +17,7 @@
 
 (defn draw [player]
     (jaylib/draw-texture-ex texture [ (- (get-in player [:position :x]) 20 )
-				    (- (get-in player [:position :y]) 20 )
-				   ] 0  1 :white))
+				    (- (get-in player [:position :y]) 20 ) ] 0  1 :white))
+				 
 
-(defn collides-with [object]
-  )
 

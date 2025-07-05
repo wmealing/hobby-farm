@@ -14,19 +14,15 @@
 )
 
 (defn draw [sprite]
-
   (var image (sprite :image))
-#  (print "DRAWING SPRITE: " image) 
-
   (var te (get sprite-textures image :unset))
 
   # when we cache miss, load it and set it.
   (when (= :unset te)
     (set te (load-image-to-texture image))
-    (put sprite-textures image te)
-    )
+    (put sprite-textures image te))
 
   (jaylib/draw-texture-ex te
-			  [(get-in sprite [:location :x] ) (get-in sprite [:location :y])] 0  0.25 :white)
-  )
+			  [(sprite :x) (sprite :y )]
+			  0  (sprite :scale) :white))
 
