@@ -31,12 +31,15 @@
 
 # I can initialize it now.
 (var player {:type "PLAYER" :image "dog.png"
+	     :speed 500
 	     :position {:x 300 :y 0 :height 100 :width 100}
 	     :last-good-position {:x 0 :y 0 :height 100 :width 100}
-	     :speed 0 :collisions-with []})
+	     :collisions-with []})
 
-(defn player->position [player]
-  (player :position))
+(set game-state (merge game-state {:player player}))
+
+(defn gamestate->player-position [player]
+  (get-in game-state [:player :position]))
 
 (def h 400)
 
@@ -95,26 +98,15 @@
   # (print "BEEP")
   )
 
-(defn resolve-interactions [player]
 
-  (var collisions (get-in player [:collisions-with]))
-  (var unresolved-collisions (array/new (length collisions)))
+(defn update-player [game-state delta-time]
 
-  (each object collisions
-    (var action (object :action))
+  (pp game-state)
 
-    (cond
-      (= action "beep")  (play-audio "beep-10.wav")
-      (= action "cluck") (play-audio "chicken-cluck.wav")
-      (array/push unresolved-collisions object))
-
-    unresolved-collisions))
-
-(defn update-player [player game-state delta-time]
-
-  (resolve-interactions player)
-
-  (var player-position (player->position player))
+  # FIXME: remove me asap.
+  (var player (get-in game-state [:player]))
+  
+  (var player-position (gamestate->player-position game-state))
   (var player-x (player-position :x))
   (var player-y (player-position :y))
 
@@ -151,22 +143,23 @@
 
   (if (< 0 (length all-collisions))
     (do
-
-      (map (fn [e] (mission/notify :in-area e game-state)) all-collisions)
-
-      (merge player {:position {:x      (get-in player [:last-good-position :x] 10)
-                                :y      (get-in player [:last-good-position :y] 10)
-				:width  (get-in player [:position :width])
-				:height (get-in player [:position :height])}
-                     :collisions-with all-collisions}))
+      (merge game-state {:player {:position {:x      (get-in player [:last-good-position :x] 10)
+					     :y      (get-in player [:last-good-position :y] 10)
+					     :width  (get-in player [:position :width])
+					     :height (get-in player [:position :height])}
+				  :speed (get-in player [:speed])
+				  :collisions-with all-collisions}}))
     (do
-      (merge player {:position {:x (math/round player-x)
-                                :y (math/round player-y)
-				:width  (get-in player [:position :width])
-				:height (get-in player [:position :height])}
-                            :collisions-with all-collisions
-                            :last-good-position {:x (math/round (get-in player [:position :x]))
-                                                 :y (math/round (get-in player [:position :y]))}})
+      (merge game-state  {:player {:position {:x (math/round player-x)
+					      :y (math/round player-y)
+					      :width  (get-in player [:position :width])
+					      :height (get-in player [:position :height])
+					      :speed (get-in player [:speed])
+					      }
+				   :speed (get-in player [:speed])
+				   :collisions-with all-collisions
+				   :last-good-position {:x (math/round (get-in player [:position :x]))
+							:y (math/round (get-in player [:position :y]))}}})
       )))
 
 # UpdateCameraCenterSmoothFollow
@@ -182,7 +175,7 @@
                          (/ screen-height 2.0)])
 
 
-  (var diff (Vector2Subtract (get-in player [:position])
+  (var diff (Vector2Subtract (get-in game-state [:player :position])
                              (Array2Vec (camera :target))))
 
   (var length (Vector2Length diff))
@@ -227,8 +220,10 @@
   (pl/init player)
 
   (var camera (camera-2d
-                :target [((player :position) :x) ((player :position) :y)]
-                :offset [(/ screen-width 2.0)    (/ screen-height 2.0)]
+                :target [(get-in game-state [:player :position :x])
+			 (get-in game-state [:player :position :y])]
+                :offset [(/ screen-width  2.0)
+			 (/ screen-height 2.0)]
                 :rotation 0
                 :zoom 1))
 
@@ -243,7 +238,7 @@
 
     (var delta-time (get-frame-time))
 
-    (set player (update-player player game-state delta-time))
+    (set game-state (update-player game-state delta-time))
 
     (camera-update camera delta-time)
 
@@ -253,8 +248,6 @@
 
     (when (key-down? :i) (do
                            (print "INFORMATION:")
-                           (pp player)
-                           (print "GAME STATE: ")
                            (pp game-state)))
 
     (when (key-down? :m) (do
@@ -300,8 +293,8 @@
           (var item (i sprite-items))
           (cond (= (item :type) :static) (sprite/draw item)))
 
-	(pl/draw player)
-	
+	(pl/draw (get-in game-state [:player]))
+				
         (end-mode-2d)
 
         (hud/draw game-state)
