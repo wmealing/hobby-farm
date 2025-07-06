@@ -13,6 +13,8 @@
 (import ./player :as pl :fresh true)
 (import ./mission :as mission :fresh true)
 (import ./hud :as hud :fresh true)
+(import ./camera :as camera :fresh true)
+(import ./inputs :as inputs :fresh true)
 
 (var scale 4)
 
@@ -26,6 +28,7 @@
 		 :player {:speed 700}
                  :loaded true
                  :debug true
+		 :camera :not-initiated
 		 :debug-msg "hello world"
                  :mission {}})
 
@@ -35,6 +38,7 @@
 	     :position {:x 300 :y 0 :height 100 :width 100}
 	     :last-good-position {:x 0 :y 0 :height 100 :width 100}
 	     :collisions-with []})
+
 
 (set game-state (merge game-state {:player player}))
 
@@ -98,36 +102,14 @@
   # (print "BEEP")
   )
 
-
 (defn update-player [game-state delta-time]
 
+  (print "UPDATE PLAYER")
   (pp game-state)
-
-  # FIXME: remove me asap.
-  (var player (get-in game-state [:player]))
+  (var player-position (get-in game-state [:player :position]))
   
-  (var player-position (gamestate->player-position game-state))
-  (var player-x (player-position :x))
-  (var player-y (player-position :y))
-
-  # using when instead of cond as multiple keys are possible.
-  (when (key-down? :left)
-    (set player-x (- player-x (* (get-in game-state [:player :speed])
-				 delta-time))))
-
-  (when (key-down? :right)
-    (set player-x (+ player-x (* (get-in game-state [:player :speed])
-				 delta-time))))
-
-  (when (key-down? :up)
-    (set player-y (- player-y (* (get-in game-state [:player :speed])
-				 delta-time))))
-
-  (when (key-down? :down)
-    (set player-y (+ player-y (* (get-in game-state [:player :speed])
-				delta-time))))
-
-  (var env-items (get-in game-state [:env-location]))
+  (var player-x (get-in player-position [:x]))
+  (var player-y (get-in player-position [:y]))
 
   (var new-collisions
     (reduce (fn [acc el]
@@ -154,47 +136,11 @@
 					      :y (math/round player-y)
 					      :width  (get-in player [:position :width])
 					      :height (get-in player [:position :height])
-					      :speed (get-in player [:speed])
-					      }
+					      :speed (get-in player [:speed])}
 				   :speed (get-in player [:speed])
 				   :collisions-with all-collisions
 				   :last-good-position {:x (math/round (get-in player [:position :x]))
-							:y (math/round (get-in player [:position :y]))}}})
-      )))
-
-# UpdateCameraCenterSmoothFollow
-(defn camera-update [camera delta-time]
-
-  (set (camera :zoom) (+ (camera :zoom) (* (get-mouse-wheel-move) 0.05)))
-
-  (var min-speed 140)
-  (var min-effect-length 10)
-  (var fraction-speed 1.2)
-
-  (set (camera :offset) [(/ screen-width 2.0)
-                         (/ screen-height 2.0)])
-
-
-  (var diff (Vector2Subtract (get-in game-state [:player :position])
-                             (Array2Vec (camera :target))))
-
-  (var length (Vector2Length diff))
-
-  (when (> length min-effect-length)
-
-    (var speed (max (* length fraction-speed) min-speed))
-
-    (def change-needed (Vector2Scale diff (* speed (/ delta-time length))))
-    (def current-target (Array2Vec (camera :target)))
-    (def new-camera-target (Vector2Add change-needed current-target))
-
-    (set (camera :target) [(+ (new-camera-target :x) 0)
-                           (- (new-camera-target :y) 0)]))
-
-    # clamp camera zoom.
-    (cond (>= (camera :zoom) 5.0) (set (camera :zoom) 5.0)
-      (<= (camera :zoom) 0.25) (set (camera :zoom) 0.25))
-  )
+							:y (math/round (get-in player [:position :y]))}}}))))
 
 (defn main [& args]
 
@@ -217,53 +163,28 @@
   (hud/init)
   (display-prompt/init)
   (sprite/init sprite-items)
-  (pl/init player)
+  (pl/init (get-in game-state [:player]))
 
-  (var camera (camera-2d
-                :target [(get-in game-state [:player :position :x])
-			 (get-in game-state [:player :position :y])]
-                :offset [(/ screen-width  2.0)
-			 (/ screen-height 2.0)]
-                :rotation 0
-                :zoom 1))
+  (set game-state (assoc-in game-state @[:camera] (camera/init game-state screen-width screen-height)))
 
   (set-target-fps 60)
   
   (set game-state (mission/start :introduction game-state))
 
-  (var last-second (os/time))
-
   (while (not (window-should-close))
-    (ev/sleep 0)
 
     (var delta-time (get-frame-time))
 
+    (set game-state (inputs/handle-keys game-state delta-time))
+    
+    (ev/sleep 0)
+
     (set game-state (update-player game-state delta-time))
 
-    (camera-update camera delta-time)
-
-    # reset on r keypress.
-    (when (key-down? :r) (do
-                           (set (camera :zoom) 2)))
-
-    (when (key-down? :i) (do
-                           (print "INFORMATION:")
-                           (pp game-state)))
-
-    (when (key-down? :m) (do
-			   (print "MISSION STATE... ")
-			   (pp (get game-state :mission)) 
-			   (print "WUT")
-			   ))
-    
-    (when (key-down? :q) (do
-			   (print "loaading.")
-			   (import ./hud :as "hud" :fresh true)
-			   (set game-state (put-in game-state [:debug-msg] ""))))
-			   
+    (camera/update (get-in game-state [:camera])
+		   game-state screen-width screen-height delta-time)
 
     (begin-drawing)
-
     (clear-background :light-gray)
 
     (if (not (get game-state :loaded))
@@ -274,8 +195,7 @@
           (set game-state (assoc-in game-state @[:loaded] true))))
       
       (do # do the main loop
-        (var this-frame (os/time))
-        (begin-mode-2d camera)
+        (begin-mode-2d (get-in game-state [:camera]))
 
         # probably not ideal, but we'll see
         (background/draw)
@@ -299,9 +219,7 @@
 
         (hud/draw game-state)
 	(display-prompt/draw game-state)
-        ))
-
-    (end-drawing))
-  (:close repl-server)
-  (close-window)
-  )
+        
+      (end-drawing))))
+  (close-window))
+1
