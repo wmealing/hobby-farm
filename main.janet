@@ -35,7 +35,7 @@
 # I can initialize it now.
 (var player {:type "PLAYER" :image "dog.png"
 	     :speed 500
-	     :position {:x 300 :y 0 :height 100 :width 100}
+	     :position @{:x 300 :y 0 :height 100 :width 100}
 	     :last-good-position {:x 0 :y 0 :height 100 :width 100}})
 
 (set game-state (merge game-state {:player player}))
