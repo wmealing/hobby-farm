@@ -1,14 +1,9 @@
 (import jaylib :as "jaylib")
+(use ./utils)
 
 (var texture :not-loaded)
 (var img-name :not-loaded)
 
-# probably should macro this.
-(defn load-image-to-texture [img-path]
-  (var image (jaylib/load-image-1 img-path))
-  (var texture (jaylib/load-texture-from-image image))
-  (jaylib/unload-image image)
-  texture)
 
 (defn init [ player ]
   (var image-path (string/join ["resources/images/" (get player :image)]))
@@ -20,4 +15,14 @@
 				      (- (get-in player [:position :y]) 20 ) ] 0  1 :white))
 				 
 
+(defn update-location [game-state x y]
+  (merge game-state {:player {:position {:x x
+					 :y y
+					 :width  (get-in game-state [:player :position :width])
+					 :height (get-in game-state [:player :position :height])
+					 :speed  (get-in game-state [:player :speed])}
+			      :speed (get-in game-state [:player :speed])
+			      :last-good-position {:x (math/round (get-in game-state [:player :position :x]))
+						   :y (math/round (get-in game-state [:player :position :y]))}}})
 
+  )

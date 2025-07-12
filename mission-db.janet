@@ -1,17 +1,43 @@
-(def missions {:introduction
-	       {:status :incomplete
-                :title "Visit the farmer"
+(import ./mission-display :as mission-display :fresh true)
+
+
+(defn start-game [event-type event-data game-state]
+  (print "STARTING GAME")
+
+  (if (= (event-data :name) "start-location")
+    (merge game-state {:mission :introduction :debug-msg "Walk to the farmer"})
+    game-state
+    ))
+
+(defn start-game-complete [game-state]
+  (print "STARTING GAME COMPLETE")
+  game-state
+  )
+
+(defn introduction-mission [event-type event-data game-state]
+
+  (print "INTRODUCTION MISSION")
+  (pp event-data)
+
+  (if (= (event-data :name) "farmer-location")
+    (do
+      (merge game-state  {:mission :none :debug-msg "MISSION-COMPLETE"}))
+    game-state))
+
+(defn introduction-complete [game-state]
+  (print "INTRODUCTION COMPLETE")
+  game-state)
+
+(def missions {:start {:title "placeholder"
+		       :objectives start-game
+		       :on-completion start-game-complete }
+	       :introduction
+	       {:title "Visit the farmer"
                 :description "say hello to the farmer, hes probably in his house"
-                :objectives
-                [{:type :goto
-		  :area :farmers-house}]
-                :rewards
-                [{:type :skill
-                  :skill :bark
-                  :amount 1}]}
+                :objectives introduction-mission
+		:on-completion introduction-complete }
 	       :collect-eggs
-               {:id :collect-eggs
-                :title "Egg Hunt"
+               {:title "Egg Hunt"
                 :description "Collect 5 eggs for the farmer's breakfast."
                 :status :inactive # :inactive, :active, :completed, :failed
                 :objectives

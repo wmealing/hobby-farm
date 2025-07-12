@@ -1,6 +1,7 @@
-(import jaylib :as "jaylib")
+# (import jaylib :as "jaylib")
 (import ./mission-db :as mission-db :fresh true)
 (import ./hud :as hud)
+(import ./location :as location)
 (use ./utils)
 
 # Table to hold the state of all current missions
@@ -9,34 +10,27 @@
 # Function to start a mission by its ID
 (defn start [id game-state]
   (print "Starting mission: " id)
-  (var mission-data (mission-db/missions id))
-  (print "MISSION DATA") 
-  (merge game-state @{:mission mission-data}))
+  (merge game-state @{:mission id}))
 
 (defn end [id game-state]
   (print "Ending mission: " id ))
 
 # Function to notify the mission system of a game event
+# doesn't return game state, returns something to merge into the gamestate.
 (defn notify [event-type event-data game-state]
-  (print "NOTIFY FOR EVENT:" event-type  " with ")
 
-  # find the current objective
-  (var mission-obj (get-in game-state [:mission :objectives]))
-  (print "MISSION OBJ: " )
-  (pp mission-obj)
+  (var new-game-state (location/handle event-data event-data game-state))
 
-  (var state-change :nil)
-  
-  (case (0 mission-obj)
-    {:area :farmers-house :type :goto} (set state-change {:debug-msg "MISSION COMPLETE"})
-    "nothing" 
-    )
+  # Note: i need to update the list of objectives here.
 
-  (pp state-change )
-  (pp (merge game-state state-change ))
-  (merge game-state state-change ))
+  (var mission-id (get-in new-game-state [:mission]))
 
-
+  (if (not (= mission-id :none))
+    (do 
+      (var current-mission (mission-db/missions mission-id))
+      (var objective-fn (get-in current-mission [:objectives]))
+      (set new-game-state (objective-fn event-type event-data new-game-state))))
+  new-game-state)
 
 (defn give-reward [reward game-state]
   (print "GIVING REWARD: " reward)
