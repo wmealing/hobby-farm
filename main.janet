@@ -9,34 +9,35 @@
 (import ./display-prompt :as display-prompt :fresh true)
 (import ./map :as map :fresh true)
 (import ./background :as background :fresh true)
+(import ./collision :as collision :fresh true)
 (import ./sprite :as sprite :fresh true)
 (import ./player :as pl :fresh true)
 (import ./mission :as mission :fresh true)
 (import ./hud :as hud :fresh true)
 (import ./camera :as camera :fresh true)
 (import ./inputs :as inputs :fresh true)
+(import ./game-state :as "" :fresh true)
 
 (var scale 4)
-
 (var screen-width  800)
 (var screen-height 800)
 
 (defn debug-dot [x y]
   (draw-circle x y 10 :black))
 
-(var game-state {:boot-time :unset
-		 :player :unset
-                 :loaded true
-                 :debug true
-		 :camera :not-initiated
-		 :debug-msg "hello world"
-                 :mission {}})
+(var game-state @{:boot-time :unset
+		  :player :unset
+                  :loaded true
+                  :debug true
+		  :camera :not-initiated
+		  :debug-msg "hello world"
+                  :mission {}})
 
 # I can initialize it now.
-(var player {:type "PLAYER" :image "dog.png"
+(var player {:image "dog.png"
 	     :speed 500
-	     :position @{:x 300 :y 0 :height 100 :width 100}
-	     :last-good-position {:x 0 :y 0 :height 100 :width 100}})
+	     :position @{:x 0 :y 0 :height 100 :width 100}
+	     :last-good-position @{:x 0 :y 0}})
 
 (set game-state (merge game-state {:player player}))
 
@@ -79,63 +80,8 @@
 (defn item->color [item]
   (get item :color :black))
 
-(defn scale-rect [r factor]
-    {:x        (* (r :x) factor)
-     :y        (* (r :y) factor)
-     :width    (* (r :width) factor)
-     :height   (* (r :height) factor)})
-
-(defn is-collision? [r1 r2-orig]
-
-  # required because we need to account for zoom.
-  (var r2 (scale-rect r2-orig scale))
-
-  (not (or
-	 (> (r1 :x) (+ (r2 :x) (r2 :width)))
-	 (> (r2 :x) (+ (r1 :x) (r1 :width)))
-	 (> (r1 :y) (+ (r2 :y) (r2 :height)))
-	 (> (r2 :y) (+ (r1 :y) (r1 :height))))))
-
 (defn play-audio [sound-file]
   # (print "BEEP")
-  )
-
-(defn update-player [game-state delta-time]
-
-  (var player-position (get-in game-state [:player :position]))
-
-  (var locations (get-in game-state [:env-location]))
-
-  (var new-collisions
-    (reduce (fn [acc el]
-              (if (is-collision? player-position el)
-                  (tuple/join acc (tuple el))
-                acc))
-            '()
-            locations))
-
-  (merge game-state {:collisions new-collisions}))
-
-(defn resolve-collisions [game-state]
-
-  (var collisions (get-in game-state [:collisions]))
-  (var new-state game-state)
-  
-  (case collisions
-    '() (set new-state game-state)
-    (let [before-collisions-x (get-in game-state [:player :last-good-position :x])
-	  before-collisions-y (get-in game-state [:player :last-good-position :y])]
-
-      (each collision collisions
-	(case (collision :type)
-	  "location" (do
-		       # okay so we get a new status here.
-		       (set  new-state (mission/notify :area collision game-state))
-		       # (print (math/floor (get-time))  " - UPDATE MISSION STATE: " )
-		       )
-	  (set new-state (pl/update-location game-state before-collisions-x before-collisions-y))))))
-  new-state
-
   )
 
 (defn main [& args]
@@ -159,7 +105,7 @@
   (hud/init)
   (display-prompt/init)
   (sprite/init sprite-items)
-  (pl/init (get-in game-state [:player]))
+  (pl/init game-state)
 
   (set game-state (assoc-in game-state @[:camera] (camera/init game-state screen-width screen-height)))
 
@@ -169,47 +115,38 @@
 
   (while (not (window-should-close))
     
-    (ev/sleep 0)
+    (ev/sleep 0) #repl
     (var delta-time (get-frame-time))
     
     (camera/update game-state screen-width screen-height delta-time)
     
     (set game-state (inputs/handle-keys game-state delta-time))
-    (set game-state (update-player game-state delta-time))
-    (set game-state (resolve-collisions game-state))
-    
+    (set game-state (collision/handle game-state))
+
     (begin-drawing)
     (clear-background :light-gray)
 
-    (if (not (get game-state :loaded))
-      (do # draw the loading screen
-        (loading-screen/draw)
-        (when (> (- (os/time)
-                    (get game-state :boot-time)) 1)
-          (set game-state (assoc-in game-state @[:loaded] true))))
-      
-      (do # do the main loop
-        (begin-mode-2d (get-in game-state [:camera]))
+    (begin-mode-2d (get-in game-state [:camera]))
 
-        # probably not ideal, but we'll see
-        (background/draw)
-
-	# honestly this is debugging.
-	(each i (get-in game-state [:env-location])
-	  (draw-rectangle-rec [(* (i :x) scale)
-			       (* (i :y) scale)
-			       (* (i :width) scale)
-			       (* (i :height) scale) ] :red))
-
-	# draw the sprites.
-	(each item sprite-items
+    # probably not ideal, but we'll see
+    (background/draw)
+    
+    # honestly this is debugging.
+    (each i (get-in game-state [:env-location])
+      (draw-rectangle-rec [(* (i :x) scale)
+			   (* (i :y) scale)
+			   (* (i :width) scale)
+			   (* (i :height) scale) ] :red))
+    
+    # draw the sprites.
+    (each item sprite-items
 	  (cond (= (item :type) :static) (sprite/draw item)))
-
-	(pl/draw (get-in game-state [:player]))
-				
-        (end-mode-2d)
-        (hud/draw game-state)
-	(end-drawing))))
+    
+    (pl/draw game-state)
+    
+    (end-mode-2d)
+    (hud/draw game-state)
+    (end-drawing))
   
   (close-window))
 

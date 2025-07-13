@@ -2,6 +2,7 @@
 (use ./utils) 
 
 (defn handle-keys [game-state delta-time]
+
   (var pos (player-pos game-state))
   
   (var speed (* (get-in game-state [:player :speed]) delta-time))
@@ -14,12 +15,18 @@
                 (* speed (cond (key-down? :up) -1 
                                (key-down? :down) 1 
                                0))))
- 
 
-  (print "CURRENT X:" (get-in game-state [:player :position :x] ))
-  (print "ROUNDED: " (math/round new-x))
 
+  # set the last good to the current
+  (put-in game-state [:player :last-good-position :x] (player-x game-state))
+  (put-in game-state [:player :last-good-position :y] (player-y game-state))
+
+  # update the current to the new calculated values.
   (put-in game-state [:player :position :x] (math/round new-x))
   (put-in game-state [:player :position :y] (math/round new-y))
+
+
+
+
   game-state)
 

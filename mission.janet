@@ -21,8 +21,6 @@
 
   (var new-game-state (location/handle event-data event-data game-state))
 
-  # Note: i need to update the list of objectives here.
-
   (var mission-id (get-in new-game-state [:mission]))
 
   (if (not (= mission-id :none))
