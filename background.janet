@@ -1,5 +1,6 @@
 (import jaylib :as "jaylib")
 (import spork/json)
+(use ./utils)
 
 (var background-texture :not-loaded)
 (var tile-cache :not-loaded)
@@ -22,6 +23,17 @@
   (-> file-path
       (load)
       (convert)))
+
+(defn get-layer [map-data n]
+  (-> (get-in map-data ["layers"])
+      (get n)))
+
+# i dont like this entirely, but what can i do.
+(defn layer-objects [n]
+  (map (fn [x] (string-keys-to-keywords x))
+       (-> (get-in map-data ["layers"])
+	   (get n)
+	   (get "objects"))))
 
 (defn load-tile-cache [map-data image-path]
 
@@ -48,12 +60,12 @@
   arr)
 
 
-(defn init []
+(defn init [game-state]
   (set map-data (load-map "resources/testmap.json"))
   (set tile-cache (load-tile-cache map-data "resources/images/grass.png"))
-  (print "TILE CACHE LOADED: " tile-cache)
-  (print "TILE CACHE SIZE: " (length tile-cache))
-  )
+    (merge game-state
+	 {:env-location (layer-objects 2)}))
+
 
 (defn draw [ ]
   (var c 0)

@@ -7,7 +7,6 @@
 
 (import ./loading-screen :as loading-screen :fresh true)
 (import ./display-prompt :as display-prompt :fresh true)
-(import ./map :as map :fresh true)
 (import ./background :as background :fresh true)
 (import ./collision :as collision :fresh true)
 (import ./sprite :as sprite :fresh true)
@@ -99,9 +98,9 @@
   (init-audio-device)
   (set-master-volume 1)
 
-  (set game-state (map/init game-state))
+  (set game-state (background/init game-state))
 
-  (background/init)
+  (background/init game-state)
   (hud/init)
   (display-prompt/init)
   (sprite/init sprite-items)
