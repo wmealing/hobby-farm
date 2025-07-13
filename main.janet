@@ -83,48 +83,8 @@
   # (print "BEEP")
   )
 
-(defn main [& args]
-
-  (def repl-server
-    (netrepl/server "127.0.0.1" "9365" (fiber/getenv (fiber/current))))
-
-  (print repl-server)
-
-  (set game-state (assoc-in game-state [:boot-time] (os/time)))
-    
-  (init-window screen-width screen-height "HOBBY FARM")
-
-  (loading-screen/init)
-  (init-audio-device)
-  (set-master-volume 1)
-
-  (set game-state (background/init game-state))
-
-  (background/init game-state)
-  (hud/init)
-  (display-prompt/init)
-  (sprite/init sprite-items)
-  (pl/init game-state)
-
-  (set game-state (assoc-in game-state @[:camera] (camera/init game-state screen-width screen-height)))
-
-  (set-target-fps 60)
-  
-  (set game-state (mission/start :start game-state))
-
-  (while (not (window-should-close))
-    
-    (ev/sleep 0) #repl
-    (var delta-time (get-frame-time))
-    
-    (camera/update game-state screen-width screen-height delta-time)
-    
-    (set game-state (inputs/handle-keys game-state delta-time))
-    (set game-state (collision/handle game-state))
-
-    (begin-drawing)
+(defn render-game [game-state]
     (clear-background :light-gray)
-
     (begin-mode-2d (get-in game-state [:camera]))
 
     # probably not ideal, but we'll see
@@ -145,7 +105,50 @@
     
     (end-mode-2d)
     (hud/draw game-state)
-    (end-drawing))
+  )
+
+(defn main [& args]
+
+      (def repl-server
+	   (netrepl/server "127.0.0.1" "9365" (fiber/getenv (fiber/current))))
+
+      (init-window screen-width screen-height "HOBBY FARM")
+
+      (loading-screen/init)
+      (init-audio-device)
+      (set-master-volume 1)
+
+      (set game-state (background/init game-state))
+
+      (background/init game-state)
+      (hud/init)
+      (display-prompt/init)
+      (sprite/init sprite-items)
+      (pl/init game-state)
+
+      (set game-state (assoc-in game-state @[:camera] (camera/init game-state screen-width screen-height)))
+
+      (set-target-fps 60)
   
-  (close-window))
+      (set game-state (mission/start :start game-state))
+
+      (while (not (window-should-close))
+    
+	(ev/sleep 0)		#repl
+	(var delta-time (get-frame-time))
+
+	# update phase
+	(camera/update game-state screen-width screen-height delta-time)
+	(set game-state (inputs/handle-keys game-state delta-time))
+	(set game-state (collision/handle game-state))
+
+	# render phase
+	(render-game game-state)
+    
+	(begin-drawing)
+	(end-drawing))
+  
+      (close-window))
+
+
 
