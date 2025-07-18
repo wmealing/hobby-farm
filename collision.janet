@@ -1,4 +1,5 @@
 (use ./utils)
+(use jaylib)
 (import ./mission :as "mission")
 (def scale 4)
 
@@ -23,7 +24,6 @@
     game-state
     ))
 
-
 (defn trigger-event [event game-state]
   (print "Triggering event")
   game-state)
@@ -33,20 +33,36 @@
   game-state)
 
 # collision.janet
-(defn check-all-collisions [player-rect env-objects]
-  (filter (fn [obj] (rectangles-overlap? player-rect obj)) env-objects))
+(defn check-all-collisions [player-rect objects]
+  (filter (fn [obj] (rectangles-overlap? player-rect obj)) objects))
 
 (defn handle-collision [collision-type collision-data game-state]
+  (print "handling collision: " collision-type)
+
+  (if (get-in game-state [:debug])
+    (draw-rectangle-rec [(* (collision-data :x) scale)
+			 (* (collision-data :y) scale)
+			 (* (collision-data :width) scale)
+			 (* (collision-data :height) scale)]
+			(color 255 255 255 64)))
+  
   (case collision-type
-    :solid (revert-player-position game-state)
+    :static (revert-player-position game-state)
     :trigger (trigger-event collision-data game-state)
-    :item (collect-item collision-data game-state))
-    :location (mission/notify :area collision-data game-state)
+    :item (collect-item collision-data game-state)
+    :location (mission/notify :area collision-data game-state)))
+
+
+(defn find-collissions [ player-pos items ]
+
   )
 
+
 (defn handle [game-state]
+
+  (var pos (player-pos game-state))
   
-  (var collisions (check-all-collisions (player-pos game-state)
+  (var collisions (check-all-collisions pos
 					(get-in game-state [:env-location])))
 
   (var state-changes
@@ -55,11 +71,9 @@
   (if-not (= nil (first state-changes))
     (first state-changes)
     game-state
-    ))
+    )
 
-
-
-
+  )
 
 
 

@@ -1,12 +1,24 @@
 (import jaylib :as jaylib)
 
 
+(defn color [r g b a]
+  [(/ r 255.0)
+   (/ g 255.0)
+   (/ b 255.0)
+   (/ a 255.0)])
+
+
+# return an x-y within rectangle.
+(defn random-within-rect[rect]
+
+  )
+
+
 (defn load-image-to-texture [img-path]
   (var image (jaylib/load-image-1 img-path))
   (var texture (jaylib/load-texture-from-image image))
   (jaylib/unload-image image)
   texture)
-
 
 (defn string-keys-to-keywords [tbl]
   (var newtbl @{})
