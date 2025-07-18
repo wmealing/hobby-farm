@@ -37,7 +37,6 @@
   (filter (fn [obj] (rectangles-overlap? player-rect obj)) objects))
 
 (defn handle-collision [collision-type collision-data game-state]
-  (print "handling collision: " collision-type)
 
   (if (get-in game-state [:debug])
     (draw-rectangle-rec [(* (collision-data :x) scale)
