@@ -11,7 +11,7 @@
 (import ./collision :as collision :fresh true)
 (import ./sprite-manager :as sprite-manager :fresh true)
 (import ./env-locations :as env-locations :fresh true)
-(import ./player :as pl :fresh true)
+(import ./player :as player :fresh true)
 (import ./mission :as mission :fresh true)
 
 (import ./hud :as hud :fresh true)
@@ -121,8 +121,7 @@
 
   (env-locations/draw game-state)
   (sprite-manager/draw game-state)
-
-  (pl/draw new-game-state)
+  (player/draw new-game-state)
 
   # probably should move this.
   (set new-game-state (collision/handle game-state))
@@ -155,7 +154,7 @@
   (background/init game-state)
   (hud/init)
   (sprite-manager/init game-state)
-  (pl/init game-state)
+  (player/init game-state)
   (set game-state (assoc-in game-state @[:camera] (camera/init game-state screen-width screen-height)))
   
   (set-target-fps 60)
