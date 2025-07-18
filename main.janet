@@ -101,13 +101,14 @@
 (defn render-game [game-state delta-time]
 
   # state setup (maybe i should thread this at some point)
-  (var new-game-state game-state)
-  (camera/update game-state screen-width screen-height delta-time)
-  (set new-game-state (keyboard-inputs/handle-keys game-state delta-time))
-  (set new-game-state (touch-inputs/handle-touch game-state delta-time))
+  (var new-game-state
+    (-> game-state
+	(camera/update screen-width screen-height delta-time)
+	(keyboard-inputs/handle-keys delta-time)
+	(touch-inputs/handle-touch delta-time)
+	(es/new delta-time)
+	))
 
-  # deprecating collisions,
-  
   # drawing
   (begin-drawing)
   
@@ -127,7 +128,6 @@
   (set new-game-state (collision/handle game-state))
   (set new-game-state (env-locations/interactions game-state))
   (set new-game-state (sprite-manager/interactions game-state))
-
   
   (end-mode-2d)
 
@@ -155,6 +155,7 @@
   (hud/init)
   (sprite-manager/init game-state)
   (player/init game-state)
+  
   (set game-state (assoc-in game-state @[:camera] (camera/init game-state screen-width screen-height)))
   
   (set-target-fps 60)

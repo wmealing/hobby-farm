@@ -44,5 +44,7 @@
 
     # clamp camera zoom.
     (cond (>= (camera :zoom) 5.0) (set (camera :zoom) 5.0)
-      (<= (camera :zoom) 0.25) (set (camera :zoom) 0.25))
+	  (<= (camera :zoom) 0.25) (set (camera :zoom) 0.25))
+
+  game-state
   )
