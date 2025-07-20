@@ -51,34 +51,35 @@
   (get-in game-state [:player :position]))
 
 (var sprite-items
-  @[{:type :static
-    :solid true
-    :scale 0.25
-    :x 30 :y 30
-    :height 50 :width 50
-    :image "resources/images/doghouse.png" :action "cluck"}
-   {:type :static
-    :solid true
-    :scale 0.5
-    :x 460 :y -300
-    :height 200 :width 200
-    :image "resources/images/farmer-house.png" :action "cluck"}
-   {:name "The farmer"
-    :type :static
-    :solid false
-    :scale 0.25
-    :x 100 :y 50
-    :height 40 :width 20
-    :has-mission true
-    :image "resources/images/farmer.png" :action "cluck"}
-   {:name "chicken house"
-    :type :static
-    :solid false
-    :scale 0.25
-    :x 250 :y 120
-    :height 60 :width 55
-    :has-mission false
-    :image "resources/images/chicken-coop.png" }])
+  @[{:components {:type :static
+		  :solid true
+		  :scale 0.25
+		  :x 30 :y 30
+		  :height 50 :width 50
+		  :image "resources/images/doghouse.png" :action "cluck"} }
+    {:components {:type :static
+		  :solid true
+		  :scale 0.5
+		  :x 460 :y -300
+		  :height 200 :width 200
+		  :image "resources/images/farmer-house.png" :action "cluck"}}
+    {:components {:name "The farmer"
+		  :type :static
+		  :solid false
+		  :scale 0.25
+		  :x 100 :y 50
+		  :height 40 :width 20
+		  :has-mission true
+		  :image "resources/images/farmer.png" :action "cluck"}}
+    {:components {:name "chicken house"
+		  :type :static
+		  :solid false
+		  :scale 0.25
+		  :x 250 :y 120
+		  :height 60 :width 55
+		  :has-mission false
+		  :image "resources/images/chicken-coop.png" }}
+   ])
 
 (set game-state (merge game-state {:sprite-items sprite-items}))
 
@@ -117,17 +118,20 @@
   (begin-mode-2d (get-in new-game-state [:camera]))
 
 
-  # probably not ideal, but we'll see
-  (background/draw)
+  # draw all the elements with the new state.
+  (set new-game-state
+       (-> new-game-state
+	   (background/draw)
+	   (env-locations/draw)
+	   (sprite-manager/draw)
+	   (player/draw)))
 
-  (env-locations/draw game-state)
-  (sprite-manager/draw game-state)
-  (player/draw new-game-state)
-
-  # probably should move this.
-  (set new-game-state (collision/handle game-state))
-  (set new-game-state (env-locations/interactions game-state))
-  (set new-game-state (sprite-manager/interactions game-state))
+  # collisions.
+  (set new-game-state
+       (-> new-game-state
+#	   (collision/handle)
+	   (env-locations/interactions)
+	   (sprite-manager/interactions)))
   
   (end-mode-2d)
 
@@ -160,17 +164,14 @@
   
   (set-target-fps 60)
   
-  (set game-state (mission/start :introduction game-state))
+  (set game-state (put-in game-state [:mission ] :unset ))
     
   (while (not (window-should-close))
     
     (ev/sleep 0)		#repl
     (var delta-time (get-frame-time))
-
     # main game screen.
-    (render-game game-state delta-time)
-    
-    )
+    (render-game game-state delta-time))
   
   (close-window))
 

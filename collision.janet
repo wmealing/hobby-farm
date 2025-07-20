@@ -33,8 +33,25 @@
   game-state)
 
 # collision.janet
-(defn check-all-collisions [player-rect objects]
-  (filter (fn [obj] (rectangles-overlap? player-rect obj)) objects))
+(defn check-all-collisions [player-rect object-type objects]
+
+  (print "OBJECT TYPE: " object-type)
+
+  (map (fn [e] (pp (get-in e [:components] ))) objects)
+
+  (cond (= object-type :area)
+	(filter (fn [obj] (rectangles-overlap?
+			   player-rect obj)) objects)
+	(= object-type :sprite)
+	(filter (fn [obj]
+		  (rectangles-overlap?
+		    player-rect
+		    (get-in obj [:components]))) objects)
+	
+	# else
+	(print "Collission for unknown object type")
+	))
+
 
 (defn handle-collision [collision-type collision-data game-state]
 
@@ -52,17 +69,12 @@
     :location (mission/notify :area collision-data game-state)))
 
 
-(defn find-collissions [ player-pos items ]
-
-  )
-
-
 (defn handle [game-state]
 
   (var pos (player-pos game-state))
   
-  (var collisions (check-all-collisions pos
-					(get-in game-state [:env-location])))
+  (var collisions
+    (check-all-collisions pos :area (get-in game-state [:env-location])))
 
   (var state-changes
     (map (fn [c] (handle-collision (c :type) c game-state)) collisions))

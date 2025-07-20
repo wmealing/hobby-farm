@@ -1,4 +1,4 @@
-(import jaylib :as "jaylib")
+(use jaylib)
 (use ./utils)
 
 (var texture :not-loaded)
@@ -9,8 +9,10 @@
   (set texture (load-image-to-texture image-path)))
 
 (defn draw [game-state]
-  (jaylib/draw-texture-ex texture [(- (player-x game-state) 20 )
-				   (- (player-y game-state) 20 ) ] 0  1 :white))
+  (draw-texture-ex texture [(- (player-x game-state) 20 )
+			    (- (player-y game-state) 20 ) ] 0  1 :white)
+  game-state
+  )
 			
 (defn update-last-known-good [game-state]
   (var last-good-known-position (get-in game-state [:player :last-good-position]))

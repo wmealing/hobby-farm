@@ -35,29 +35,40 @@
 	   (get n)
 	   (get "objects"))))
 
+(defn locations-by-name [name]
+  (var all-objects (map (fn [x] (string-keys-to-keywords x))
+		        (-> (get-in map-data ["layers"])
+		  	   (get 2)
+			   (get "objects"))))
+  
+#   (filter (fn [e] (= (e :name) name)) all-objects)
+  )
+
+
+
 (defn load-tile-cache [map-data image-path]
 
-  (def arr @[])
+      (def arr @[])
 
-  (def full-image (jaylib/load-image-1 image-path))
+      (def full-image (jaylib/load-image-1 image-path))
 
-  (set tile-width  (get map-data "tilewidth"))
-  (set tile-height (get map-data "tileheight"))
-  (set map-width   (get map-data "width"))
-  (set map-height  (get map-data "height"))
-  (set image-width  (get (jaylib/image-dimensions full-image) 0))
-  (set image-height (get (jaylib/image-dimensions full-image) 1))
+      (set tile-width  (get map-data "tilewidth"))
+      (set tile-height (get map-data "tileheight"))
+      (set map-width   (get map-data "width"))
+      (set map-height  (get map-data "height"))
+      (set image-width  (get (jaylib/image-dimensions full-image) 0))
+      (set image-height (get (jaylib/image-dimensions full-image) 1))
 
-  (loop [y :range [0 image-height tile-height ]
-	 x :range [0 image-width  tile-width   ]
-	 ]
+      (loop [y :range [0 image-height tile-height ]
+	       x :range [0 image-width  tile-width   ]
+	       ]
 
-      (var rect [x y tile-width tile-height])
-      (def image (jaylib/image-from-image full-image rect))
-      (def texture (jaylib/load-texture-from-image image))
-      (array/push arr texture)
-    )
-  arr)
+	    (var rect [x y tile-width tile-height])
+	    (def image (jaylib/image-from-image full-image rect))
+	    (def texture (jaylib/load-texture-from-image image))
+	    (array/push arr texture)
+	    )
+      arr)
 
 
 (defn init [game-state]
@@ -67,7 +78,7 @@
 	 {:env-location (layer-objects 2)}))
 
 
-(defn draw [ ]
+(defn draw [game-state]
   (var c 0)
   (def scale 4)
 
@@ -96,7 +107,8 @@
 	    (jaylib/draw-texture-ex (get tile-cache (- map-val 1))
 				    [(* i scale) (* j scale) ] 0 scale :ray-white)))
 	(++ c)
-	))
+    )
+  game-state)
 
 
 

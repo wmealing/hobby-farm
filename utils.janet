@@ -1,5 +1,5 @@
 (import jaylib :as jaylib)
-
+(import spork/randgen :as randgen :fresh true)
 
 (defn color [r g b a]
   [(/ r 255.0)
@@ -11,6 +11,10 @@
 # return an x-y within rectangle.
 (defn random-within-rect[rect]
 
+  (var x (randgen/rand-int  (rect :x) (+ (rect :x) (rect :width))))
+  (var y (randgen/rand-int  (rect :y) (+ (rect :y) (rect :height))))
+  
+  @{:x (math/round x ) :y (math/round y)}
   )
 
 
