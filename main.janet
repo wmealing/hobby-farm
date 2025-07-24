@@ -12,7 +12,7 @@
 (import ./sprite-manager :as sprite-manager :fresh true)
 (import ./env-locations :as env-locations :fresh true)
 (import ./player :as player :fresh true)
-(import ./mission :as mission :fresh true)
+(import /entity :fresh true)
 
 (import ./hud :as hud :fresh true)
 (import ./camera :as camera :fresh true)
@@ -22,6 +22,7 @@
 
 (import ./game-state :as "" :fresh true)
 (import ./event-spawner :as es :fresh true)
+(import ./default-state :as default-state)
 
 (var scale 4)
 (var screen-width  800)
@@ -30,58 +31,7 @@
 (defn debug-dot [x y]
   (draw-circle x y 10 :black))
 
-(var game-state @{:boot-time :unset
-		  :player :unset
-                  :loaded true
-                  :debug true
-		  :camera :not-initiated
-		  :debug-msg "hello world"
-                  :mission {}})
-
-# I can initialize it now.
-(var player {:image "dog.png"
-	     :speed 500
-	     :position @{:x 0 :y 0 :height 100 :width 100}
-	     :last-good-position @{:x 0 :y 0}
-	     :last-inputs @[]})
-
-(set game-state (merge game-state {:player player}))
-
-(defn gamestate->player-position [player]
-  (get-in game-state [:player :position]))
-
-(var sprite-items
-  @[{:components {:type :static
-		  :solid true
-		  :scale 0.25
-		  :x 30 :y 30
-		  :height 50 :width 50
-		  :image "resources/images/doghouse.png" :action "cluck"} }
-    {:components {:type :static
-		  :solid true
-		  :scale 0.5
-		  :x 460 :y -300
-		  :height 200 :width 200
-		  :image "resources/images/farmer-house.png" :action "cluck"}}
-    {:components {:name "The farmer"
-		  :type :static
-		  :solid false
-		  :scale 0.25
-		  :x 100 :y 50
-		  :height 40 :width 20
-		  :has-mission true
-		  :image "resources/images/farmer.png" :action "cluck"}}
-    {:components {:name "chicken house"
-		  :type :static
-		  :solid false
-		  :scale 0.25
-		  :x 250 :y 120
-		  :height 60 :width 55
-		  :has-mission false
-		  :image "resources/images/chicken-coop.png" }}
-   ])
-
-(set game-state (merge game-state {:sprite-items sprite-items}))
+(var game-state (default-state/init))
 
 (defn item->location-arr [i]
     [(i :x)
@@ -107,8 +57,7 @@
 	(camera/update screen-width screen-height delta-time)
 	(keyboard-inputs/handle-keys delta-time)
 	(touch-inputs/handle-touch delta-time)
-	(es/new delta-time)
-	))
+	(es/new delta-time)))
 
   # drawing
   (begin-drawing)
@@ -117,22 +66,18 @@
   
   (begin-mode-2d (get-in new-game-state [:camera]))
 
-
   # draw all the elements with the new state.
   (set new-game-state
        (-> new-game-state
 	   (background/draw)
 	   (env-locations/draw)
 	   (sprite-manager/draw)
-	   (player/draw)))
-
-  # collisions.
-  (set new-game-state
-       (-> new-game-state
-#	   (collision/handle)
+	   (player/draw)
 	   (env-locations/interactions)
-	   (sprite-manager/interactions)))
-  
+	   (sprite-manager/interactions)
+	   ))
+
+
   (end-mode-2d)
 
   # Draw this later because its 2d on top of game.
@@ -140,6 +85,8 @@
   (hud/draw game-state)
   
   (end-drawing)
+
+  new-game-state
   )
 
 (defn main [& args]
@@ -163,15 +110,28 @@
   (set game-state (assoc-in game-state @[:camera] (camera/init game-state screen-width screen-height)))
   
   (set-target-fps 60)
+
+  (print "GAME STATE CHECKPOINT 0 : ")
+  (pp game-state)
   
   (set game-state (put-in game-state [:mission ] :unset ))
+  
+  (print "GAME STATE CHECKPOINT 1 : ")
+  (pp game-state)
     
   (while (not (window-should-close))
     
-    (ev/sleep 0)		#repl
+    (ev/sleep 0)		# allow repl
     (var delta-time (get-frame-time))
-    # main game screen.
-    (render-game game-state delta-time))
+
+    
+    (print "GAME STATE CHECKPOINT 2 : ")    
+    (pp game-state)
+    
+    (set game-state (render-game game-state delta-time))
+    (pp game-state)
+    
+    ) 
   
   (close-window))
 

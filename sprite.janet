@@ -20,7 +20,7 @@
   # this is annoying.
   (let [new-x (* (sprite :x) scale) 
 	new-y (* (sprite :y) scale)]
-
+    
     (jaylib/draw-texture-ex te [new-x new-y]
 			    0
 			    (sprite :scale) :white)))

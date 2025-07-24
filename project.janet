@@ -4,8 +4,9 @@
   :name "my-project"
   :description ""
   :dependencies ["https://github.com/janet-lang/jaylib"
+		 "https://github.com/pyrmont/testament"
 		{:url "https://github.com/janet-lang/spork.git"
-                  :tag "641b27238e073c5f5f963ec16c79b51643d3e66f"}]
+                 :tag "641b27238e073c5f5f963ec16c79b51643d3e66f"}]
   :dev-dependencies ["https://github.com/janet-lang/spork"]
   :author ""
   :license ""

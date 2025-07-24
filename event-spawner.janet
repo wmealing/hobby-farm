@@ -17,17 +17,20 @@
     (var entities
       (->> (range 10) (map (fn [arg]
 			     (var r (random-within-rect egg-holder))
-			     (entity/make-entity {:width 10
-						  :height 10
+			     (entity/make-entity {:width 20
+						  :height 20
+						  :scale 0.1
 						  :x (r :x)
 						  :y (r :y)
-						  :sprite "resources/images/egg.png" })))))
+						  :type :item
+						  :image "resources/images/egg.png" })))))
+
     (put-in game-state [:mission] :eggs)
 
     # Find the existing , sprites..
-    (var sprite-items (get-in game-state [:sprite-items]))
+    (var existing-entities (entity/fetch-all game-state))
 
-    (put-in game-state [:sprite-items] (array/concat sprite-items entities))
+    (put-in game-state [:entities] (array/concat @[] existing-entities entities))
 
     )
 

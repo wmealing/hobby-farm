@@ -1,6 +1,10 @@
-(use ./utils)
 (use jaylib)
+(use ./utils)
+
 (import ./mission :as "mission")
+(import /items :as items)
+(import /entity :as entity :fresh true)
+
 (def scale 4)
 
 (defn rectangles-overlap? [r1 r2-orig]
@@ -30,19 +34,23 @@
 
 (defn collect-item [item-data game-state]
   (print "Collecting item")
-  game-state)
+
+  (print "ENTITY COUNT BEFORE: " (length (entity/fetch-all game-state)))
+  (def filtered-game-state (entity/remove-entity game-state (item-data :id)))
+  (print "ENTITY COUNT AFTER: " (length (entity/fetch-all filtered-game-state)))
+  
+  # add it to the players items
+  (items/add filtered-game-state item-data))
+
+
 
 # collision.janet
 (defn check-all-collisions [player-rect object-type objects]
 
-  (print "OBJECT TYPE: " object-type)
-
-  (map (fn [e] (pp (get-in e [:components] ))) objects)
-
   (cond (= object-type :area)
 	(filter (fn [obj] (rectangles-overlap?
 			   player-rect obj)) objects)
-	(= object-type :sprite)
+	(= object-type :entities)
 	(filter (fn [obj]
 		  (rectangles-overlap?
 		    player-rect
@@ -54,6 +62,8 @@
 
 
 (defn handle-collision [collision-type collision-data game-state]
+
+  (print "COLLISION TYPE: " collision-type)
 
   (if (get-in game-state [:debug])
     (draw-rectangle-rec [(* (collision-data :x) scale)
@@ -79,11 +89,9 @@
   (var state-changes
     (map (fn [c] (handle-collision (c :type) c game-state)) collisions))
 
-  (if-not (= nil (first state-changes))
-    (first state-changes)
+  (if (= nil (first state-changes))
     game-state
-    )
-
+    (first state-changes))
   )
 
 

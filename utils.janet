@@ -9,7 +9,7 @@
 
 
 # return an x-y within rectangle.
-(defn random-within-rect[rect]
+(defn random-within-rect [rect]
 
   (var x (randgen/rand-int  (rect :x) (+ (rect :x) (rect :width))))
   (var y (randgen/rand-int  (rect :y) (+ (rect :y) (rect :height))))
@@ -19,6 +19,8 @@
 
 
 (defn load-image-to-texture [img-path]
+
+  (print "IMAGE PATH: " img-path)
   (var image (jaylib/load-image-1 img-path))
   (var texture (jaylib/load-texture-from-image image))
   (jaylib/unload-image image)
@@ -30,6 +32,25 @@
     (var val (tbl k))
     (put newtbl (if (string? k) (keyword k) k) val))
   newtbl)
+
+# rest: returns all items of an array after the first
+(defn rest [xs]
+  (slice xs 1))
+
+
+(defn assoc [table k v]
+  (let [new (table table)] #  copy existing table
+    (put new k v)
+    new))
+
+
+(defn assoc-in [m ks v]
+  (if (empty? ks)
+    v
+    (let [k (first ks)
+          rest-ks (rest ks)
+          sub-map (get m k {})]
+      (assoc m k (assoc-in sub-map rest-ks v)))))
 
 (defn assoc-in [m ks v]
   (if (empty? ks)
