@@ -33,18 +33,6 @@
 
 (var game-state (default-state/init))
 
-(defn item->location-arr [i]
-    [(i :x)
-     (i :y)
-     (i :width)
-     (i :height)])
-
-(defn item->location [item]
-  (get-in item [:location]))
-
-(defn item->color [item]
-  (get item :color :black))
-
 (defn play-audio [sound-file]
   # (print "BEEP")
   )
@@ -66,13 +54,15 @@
   
   (begin-mode-2d (get-in new-game-state [:camera]))
 
-  # draw all the elements with the new state.
+  # draw state.
   (set new-game-state
        (-> new-game-state
 	   (background/draw)
 	   (env-locations/draw)
 	   (sprite-manager/draw)
 	   (player/draw)
+
+	   # technically interactions.
 	   (env-locations/interactions)
 	   (sprite-manager/interactions)
 	   ))
@@ -81,13 +71,15 @@
   (end-mode-2d)
 
   # Draw this later because its 2d on top of game.
+
+  # 2d controls
   (touch-inputs/draw game-state)
+
+  # 2d huds
   (hud/draw game-state)
   
   (end-drawing)
-
-  new-game-state
-  )
+  new-game-state)
 
 (defn main [& args]
   
@@ -110,26 +102,15 @@
   (set game-state (assoc-in game-state @[:camera] (camera/init game-state screen-width screen-height)))
   
   (set-target-fps 60)
-
-  (print "GAME STATE CHECKPOINT 0 : ")
-  (pp game-state)
   
   (set game-state (put-in game-state [:mission ] :unset ))
-  
-  (print "GAME STATE CHECKPOINT 1 : ")
-  (pp game-state)
     
   (while (not (window-should-close))
     
     (ev/sleep 0)		# allow repl
     (var delta-time (get-frame-time))
 
-    
-    (print "GAME STATE CHECKPOINT 2 : ")    
-    (pp game-state)
-    
     (set game-state (render-game game-state delta-time))
-    (pp game-state)
     
     ) 
   

@@ -19,16 +19,18 @@
 # doesn't return game state, returns something to merge into the gamestate.
 (defn notify [event-type event-data game-state]
 
-  (var new-game-state (location/handle event-data event-data game-state))
+  (var mission-id (get-in game-state [:mission]))
 
-  (var mission-id (get-in new-game-state [:mission]))
+  (print "MISSION ID: " mission-id)
 
-  (if (not (= mission-id :none))
-    (do 
-      (var current-mission (mission-db/missions mission-id))
-      (var objective-fn (get-in current-mission [:objectives]))
-      (set new-game-state (objective-fn event-type event-data new-game-state))))
-  new-game-state)
+
+#   (if (not (= mission-id :none))
+#     (do 
+#       (var current-mission (mission-db/missions mission-id))
+#       (var objective-fn (get-in current-mission [:objectives]))
+#       (set new-game-state (objective-fn event-type event-data new-game-state))))
+  
+  game-state)
 
 (defn give-reward [reward game-state]
   (print "GIVING REWARD: " reward)

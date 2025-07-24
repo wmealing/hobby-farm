@@ -1,7 +1,7 @@
 (use jaylib)
 (use ./utils)
 
-(import ./mission :as "mission")
+(import ./mission :as "mission" :fresh true)
 (import /items :as items)
 (import /entity :as entity :fresh true)
 
@@ -35,9 +35,7 @@
 (defn collect-item [item-data game-state]
   (print "Collecting item")
 
-  (print "ENTITY COUNT BEFORE: " (length (entity/fetch-all game-state)))
   (def filtered-game-state (entity/remove-entity game-state (item-data :id)))
-  (print "ENTITY COUNT AFTER: " (length (entity/fetch-all filtered-game-state)))
   
   # add it to the players items
   (items/add filtered-game-state item-data))
@@ -64,6 +62,7 @@
 (defn handle-collision [collision-type collision-data game-state]
 
   (print "COLLISION TYPE: " collision-type)
+  (print (type collision-type))
 
   (if (get-in game-state [:debug])
     (draw-rectangle-rec [(* (collision-data :x) scale)

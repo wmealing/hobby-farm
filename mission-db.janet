@@ -6,7 +6,6 @@
     game-state))
 
 
-
 (def missions {:introduction {:title "Visit the farmer"
 			      :short-description "say hello to the farmer, hes probably in his house"
 			      :long-description "Visit the farmer ! \n\ngo to your master!"

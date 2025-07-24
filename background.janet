@@ -60,8 +60,7 @@
       (set image-height (get (jaylib/image-dimensions full-image) 1))
 
       (loop [y :range [0 image-height tile-height ]
-	       x :range [0 image-width  tile-width   ]
-	       ]
+	     x :range [0 image-width  tile-width ]]
 
 	    (var rect [x y tile-width tile-height])
 	    (def image (jaylib/image-from-image full-image rect))
