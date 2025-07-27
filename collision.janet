@@ -1,9 +1,10 @@
 (use jaylib)
 (use ./utils)
 
-(import ./mission :as "mission" :fresh true)
+(import /mission :as "mission" :fresh true)
 (import /items :as items)
 (import /entity :as entity :fresh true)
+(import /tasks :as tasks)
 
 (def scale 4)
 
@@ -33,14 +34,15 @@
   game-state)
 
 (defn collect-item [item-data game-state]
-  (print "Collecting item")
 
+  (print "Collecting item")
+  (tasks/push {:action :remove :entity :id})
+  (tasks/push {:action :add    :entity item-data})
+  
   (def filtered-game-state (entity/remove-entity game-state (item-data :id)))
   
   # add it to the players items
   (items/add filtered-game-state item-data))
-
-
 
 # collision.janet
 (defn check-all-collisions [player-rect object-type objects]
@@ -61,8 +63,6 @@
 
 (defn handle-collision [collision-type collision-data game-state]
 
-  (print "COLLISION TYPE: " collision-type)
-  (print (type collision-type))
 
   (if (get-in game-state [:debug])
     (draw-rectangle-rec [(* (collision-data :x) scale)
@@ -72,7 +72,9 @@
 			(color 255 255 255 64)))
   
   (case collision-type
-    :static (revert-player-position game-state)
+    :static (do
+	      (mission/notify :sprite-collision collision-data game-state)
+	      (revert-player-position game-state))
     :trigger (trigger-event collision-data game-state)
     :item (collect-item collision-data game-state)
     :location (mission/notify :area collision-data game-state)))

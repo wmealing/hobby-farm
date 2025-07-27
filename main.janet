@@ -14,6 +14,8 @@
 (import ./player :as player :fresh true)
 (import /entity :fresh true)
 
+(import /tasks :as tasks :fresh true)
+
 (import ./hud :as hud :fresh true)
 (import ./camera :as camera :fresh true)
 
@@ -22,20 +24,14 @@
 
 (import ./game-state :as "" :fresh true)
 (import ./event-spawner :as es :fresh true)
+(import /event-manager :as event-manager :fresh true)
 (import ./default-state :as default-state)
 
 (var scale 4)
 (var screen-width  800)
 (var screen-height 800)
 
-(defn debug-dot [x y]
-  (draw-circle x y 10 :black))
-
 (var game-state (default-state/init))
-
-(defn play-audio [sound-file]
-  # (print "BEEP")
-  )
 
 (defn render-game [game-state delta-time]
 
@@ -45,7 +41,9 @@
 	(camera/update screen-width screen-height delta-time)
 	(keyboard-inputs/handle-keys delta-time)
 	(touch-inputs/handle-touch delta-time)
-	(es/new delta-time)))
+	(es/new delta-time)
+	(event-manager/process)
+	))
 
   # drawing
   (begin-drawing)
@@ -62,7 +60,7 @@
 	   (sprite-manager/draw)
 	   (player/draw)
 
-	   # technically interactions.
+	   # technically interactions, maybe break this out.
 	   (env-locations/interactions)
 	   (sprite-manager/interactions)
 	   ))
@@ -71,14 +69,14 @@
   (end-mode-2d)
 
   # Draw this later because its 2d on top of game.
-
-  # 2d controls
+  # 2D controls
   (touch-inputs/draw game-state)
 
-  # 2d huds
+  # 2d hud
   (hud/draw game-state)
   
   (end-drawing)
+  
   new-game-state)
 
 (defn main [& args]

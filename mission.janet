@@ -1,36 +1,29 @@
-# (import jaylib :as "jaylib")
-(import ./mission-db :as mission-db :fresh true)
-(import ./hud :as hud)
 (import ./location :as location)
+(import /items :as items)
+(import pat :as pat)
+(import /tasks :as tasks :fresh true)
+
 (use ./utils)
 
-# Table to hold the state of all current missions
-(var completed-missions @{})
 
-# Function to start a mission by its ID
-(defn start [id game-state]
-  (print "Starting mission: " id)
-  (merge game-state @{:mission id}))
-
-(defn end [id game-state]
-  (print "Ending mission: " id ))
-
-# Function to notify the mission system of a game event
-# doesn't return game state, returns something to merge into the gamestate.
 (defn notify [event-type event-data game-state]
-
-  (var mission-id (get-in game-state [:mission]))
-
-  (print "MISSION ID: " mission-id)
-
-
-#   (if (not (= mission-id :none))
-#     (do 
-#       (var current-mission (mission-db/missions mission-id))
-#       (var objective-fn (get-in current-mission [:objectives]))
-#       (set new-game-state (objective-fn event-type event-data new-game-state))))
   
-  game-state)
+  (match [ event-type event-data ]
+    [:sprite-collision {:name "farmer"} ] (do
+					    (print "HELLO FARMER")
+					    (tasks/push {:action :remove :entity "3"})
+					    (print "TASKS PUSHED")
+					    )
+    
+    [:sprite-collision _ ]                  (print "=> HIT SOMETHING ELSE" )
+    [:area _ ] (prin "" )
+    [:multiply x y] (* x y)
+    [:divide x y] (/ x y)
+    (print "->>>>>>>>> NO MATCH: " event-type)))
+
+  
+  
+
 
 (defn give-reward [reward game-state]
   (print "GIVING REWARD: " reward)

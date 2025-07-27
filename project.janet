@@ -5,8 +5,9 @@
   :description ""
   :dependencies ["https://github.com/janet-lang/jaylib"
 		 "https://github.com/pyrmont/testament"
-		{:url "https://github.com/janet-lang/spork.git"
-                 :tag "641b27238e073c5f5f963ec16c79b51643d3e66f"}]
+		 "https://github.com/janet-lang/spork.git"
+		{:url "https://github.com/ianthehenry/pat.git"
+		 :tag "v2.0.1"} ]
   :dev-dependencies ["https://github.com/janet-lang/spork"]
   :author ""
   :license ""

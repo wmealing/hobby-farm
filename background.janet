@@ -28,12 +28,28 @@
   (-> (get-in map-data ["layers"])
       (get n)))
 
+(defn keyword-type [location]
+  # we get a table, we get the type key (string)
+  # insert the type key as a keyword
+  (var existing (get-in location [:type]))
+  (merge @{} location {:type (keyword existing) }))
+
+
+(defn location-fixup [location]
+  (-> location
+      (string-keys-to-keywords)
+      (keyword-type)))
+
 # i dont like this entirely, but what can i do.
-(defn layer-objects [n]
-  (map (fn [x] (string-keys-to-keywords x))
+(defn layer-objects [layer-id]
+  (map (fn [x] (location-fixup x))
        (-> (get-in map-data ["layers"])
-	   (get n)
+	   (get layer-id)
 	   (get "objects"))))
+
+
+
+
 
 (defn locations-by-name [name]
   (var all-objects (map (fn [x] (string-keys-to-keywords x))
