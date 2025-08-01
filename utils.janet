@@ -1,5 +1,5 @@
 (import jaylib :as jaylib)
-(import spork/randgen :as randgen :fresh true)
+(import spork/randgen)
 
 (defn color [r g b a]
   [(/ r 255.0)

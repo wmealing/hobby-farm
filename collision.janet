@@ -1,9 +1,9 @@
 (use jaylib)
 (use ./utils)
 
-(import /mission :as "mission" :fresh true)
+(import /mission :as "mission")
 (import /items :as items)
-(import /entity :as entity :fresh true)
+(import /entity :as entity)
 (import /tasks :as tasks)
 
 (def scale 4)

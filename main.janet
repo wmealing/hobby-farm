@@ -8,13 +8,13 @@
 (import ./loading-screen :as loading-screen :fresh true)
 
 (import ./background :as background :fresh true)
-(import ./collision :as collision :fresh true)
+(import ./collision :as collision )
 (import ./sprite-manager :as sprite-manager :fresh true)
 (import ./env-locations :as env-locations :fresh true)
 (import ./player :as player :fresh true)
 (import /entity :fresh true)
 
-(import /tasks :as tasks :fresh true)
+
 
 (import ./hud :as hud :fresh true)
 (import ./camera :as camera :fresh true)
