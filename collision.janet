@@ -7,6 +7,7 @@
 (import /tasks :as tasks)
 
 (def scale 4)
+(var last-collision nil)
 
 (defn rectangles-overlap? [r1 r2-orig]
 
@@ -35,14 +36,25 @@
 
 (defn collect-item [item-data game-state]
 
-  (print "Collecting item")
-  (tasks/push {:action :remove :entity :id})
-  (tasks/push {:action :add    :entity item-data})
+
+  (var id1 (get-in item-data [:id]))
+  (var id2 last-collision)
+
+  (if (= (get-in item-data [:id]) last-collision)
+    (do
+      (print "EXISTING ITEM COLLISION"))
+    (do
+      (print "NEW ITEM COLLECTED")
+      (tasks/push {:action :remove  :entity (item-data :id)})
+      (tasks/push {:action :add     :entity item-data}))
+    )
+
+
+  (set last-collision (get-in item-data [:id]))
+
   
-  (def filtered-game-state (entity/remove-entity game-state (item-data :id)))
-  
-  # add it to the players items
-  (items/add filtered-game-state item-data))
+  game-state)
+
 
 # collision.janet
 (defn check-all-collisions [player-rect object-type objects]
