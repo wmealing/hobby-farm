@@ -44,13 +44,6 @@
     new))
 
 
-(defn assoc-in [m ks v]
-  (if (empty? ks)
-    v
-    (let [k (first ks)
-          rest-ks (rest ks)
-          sub-map (get m k {})]
-      (assoc m k (assoc-in sub-map rest-ks v)))))
 
 (defn assoc-in [m ks v]
   (if (empty? ks)
@@ -98,6 +91,7 @@
   (print "UPDATING POSITION")
   (merge game-state {:player @{:position {:x x
 					 :y y
+					 :action (get-in game-state [:player :action])
 					 :width  (get-in game-state [:player :position :width])
 					 :height (get-in game-state [:player :position :height])
 					 :speed  (get-in game-state [:player :speed])}

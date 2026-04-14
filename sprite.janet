@@ -3,11 +3,22 @@
 
 (var sprite-textures  @{})
 
+(defn get-texture [image-path]
+  (var te (get sprite-textures image-path :unset))
+
+  (when (= :unset te)
+    (set te (load-image-to-texture image-path))
+    (put sprite-textures image-path te))
+
+  te
+  )
+
 (defn init [sprite-list]
   (print "SPRITE INIT")
 )
 
 (defn draw [sprite]
+
   (var image (sprite :image))
   (var te (get sprite-textures image :unset))
   (var scale 4 )

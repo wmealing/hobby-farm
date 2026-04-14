@@ -1,13 +1,37 @@
-(import ./entity :as entity :fresh true)
 (use ./utils)
+(import /entity)
+(import spork/randgen)
 
-# I spawn events tha the player can do.
-(defn new [game-state delta-time]
 
-  (var mission-state (get-in game-state [:mission]))
+(var last-time-random 0)
 
-  (when (= mission-state :unset)
+(defn sheep-mission [game-state]
 
+  (var locations (get-in game-state [:env-location]))
+  
+  (var sheep-start (first (filter (fn [e] (= (e :name) "sheepspawn-location")) locations)))
+
+  (var entities
+      (->> (range 30)
+	   (map (fn [arg]
+		  (var r (random-within-rect sheep-start))
+		  (entity/make-entity {:width 20
+				       :height 20
+				       :scale 0.1
+				       :x (r :x)
+				       :y (r :y)
+				       :type :animal
+				       :name "sheep"
+				       :image "resources/images/sheep1.png" })))))
+
+  (var existing-entities (entity/fetch-all game-state))
+
+  (put-in game-state [:entities] (array/concat @[] existing-entities entities))
+  game-state
+  )
+    
+
+(defn egg-mission [game-state]
     (var items (get-in game-state [:env-location]))
 
     # how about a bunch of eggs to collect,should only be 1
@@ -27,13 +51,33 @@
 				       :name "egg"
 				       :image "resources/images/egg.png" })))))
 
-    (put-in game-state [:mission] :eggs)
-
     # Find the existing , sprites..
     (var existing-entities (entity/fetch-all game-state))
 
-    (put-in game-state [:entities] (array/concat @[] existing-entities entities)))
+    (put-in game-state [:entities] (array/concat @[] existing-entities entities))
 
   game-state
   )
+
+
+
+# I spawn events tha the player can do.
+(defn new [game-state delta-time]
+
+  (var now (os/time))
+
+  (when (<= 5 (- now last-time-random))
+	     
+    (var mission-list [:egg-mission :sheep-mission :none])
+    (var r (randgen/rand-int 0 (length mission-list)))
+    (var choice (get mission-list r))
+    (print "RANDOM IS: " choice " - " now )
+    (set last-time-random now)
+
+    (cond 
+	  (= choice :egg-mission) (egg-mission game-state)
+	  (= choice :sheep-mission) (sheep-mission game-state)
+	  (print "NO MISSION")))
+  
+  game-state)
 

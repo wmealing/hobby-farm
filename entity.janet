@@ -7,7 +7,6 @@
 				  (fetch-all game-state) entity)}))
 
 (defn remove-entity [game-state entity-id]
-  (print "REMOVING " entity-id)
   (var filtered (filter (fn [i] (not (= entity-id (i :id)))) (fetch-all game-state)))
   (merge game-state {:entities filtered}))
 
@@ -25,6 +24,9 @@
 (defn add-component [entity component-type data]
       (put-in entity [component-type] data))
 
+(defn fetch-by-key [game-state key name]
+  (filter (fn [i] (= (i key) name))
+	  (get-in game-state [:entities])))
 
 # Usage
 # (var player (make-entity {:position {:x 300 :y 0}

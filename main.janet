@@ -31,7 +31,17 @@
 (var screen-width  800)
 (var screen-height 800)
 
+(var global-message-queue @[])
 (var game-state (default-state/init))
+
+(import /tasks :as tasks)
+
+(defn debug [game-state]
+#  (prin "DEBUGGING: ")
+#  (pp (get-in game-state [:player]))
+#  (print "**************")
+  game-state
+  )
 
 (defn render-game [game-state delta-time]
 
@@ -42,14 +52,14 @@
 	(keyboard-inputs/handle-keys delta-time)
 	(touch-inputs/handle-touch delta-time)
 	(es/new delta-time)
-	(event-manager/process)
+
 	))
 
   # drawing
   (begin-drawing)
   
   (clear-background :light-gray)
-  
+
   (begin-mode-2d (get-in new-game-state [:camera]))
 
   # draw state.
@@ -63,6 +73,7 @@
 	   # technically interactions, maybe break this out.
 	   (env-locations/interactions)
 	   (sprite-manager/interactions)
+	   (event-manager/process)
 	   ))
 
 

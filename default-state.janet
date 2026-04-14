@@ -8,11 +8,12 @@
 		    :camera :not-initiated
 		    :items @[]
 		    :debug-msg "hello world"
-                    :mission {}})
+                    :mission :none})
   
   (var player {:image "dog.png"
 	       :speed 500
-	       :position @{:x 400 :y 0 :height 100 :width 100}
+	       :action false
+	       :position @{:x 1500 :y 800 :height 100 :width 100}
 	       :last-good-position @{:x 0 :y 0}
 	       :last-inputs @[]})
 

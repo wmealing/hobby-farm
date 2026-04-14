@@ -1,7 +1,7 @@
 (use jaylib)
-(use ./utils)
+(use /utils)
 
-(import /mission :as "mission")
+(import /mission :as mission)
 (import /items :as items)
 (import /entity :as entity)
 (import /tasks :as tasks)
@@ -55,6 +55,42 @@
   
   game-state)
 
+(defn move-animal [game-state collision-data ]
+  (var new-game-state game-state)
+
+  (var updated-entity collision-data)
+
+  # remove the existing item
+  (set new-game-state
+       (entity/remove-entity new-game-state (collision-data :id)))
+
+  (var player-direction (get-in game-state [:player :position :directions]))
+
+  (pp player-direction)
+
+
+  (var new-x (+ (updated-entity :x) 
+                (* 5 (cond (get player-direction 0) -1 
+                           (get player-direction 1)  1
+                               0))))
+
+  (var new-y (+ (updated-entity :y) 
+                (* 5 (cond (get player-direction 2) -1 
+                           (get player-direction 3)  1
+                           0))))
+
+
+  (var new-entity (-> updated-entity
+		      (put :x new-x)
+		      (put :y new-y)
+		      # more to update here.
+		      ))
+
+
+  (entity/add new-game-state {:components new-entity :id (new-entity :id)})
+  )
+
+
 
 # collision.janet
 (defn check-all-collisions [player-rect object-type objects]
@@ -69,7 +105,7 @@
 		    (get-in obj [:components]))) objects)
 	
 	# else
-	(print "Collission for unknown object type")
+	(print "Collision for unknown object type")
 	))
 
 
@@ -82,14 +118,19 @@
 			 (* (collision-data :width) scale)
 			 (* (collision-data :height) scale)]
 			(color 255 255 255 64)))
+
+
+  (print "COLLISION TYPE: " collision-type)
   
   (case collision-type
     :static (do
 	      (mission/notify :sprite-collision collision-data game-state)
 	      (revert-player-position game-state))
+    :animal (do (print "BEEP BEEP") (move-animal game-state collision-data ))
     :trigger (trigger-event collision-data game-state)
     :item (collect-item collision-data game-state)
-    :location (mission/notify :area collision-data game-state)))
+    :location (mission/notify :area collision-data game-state))
+  )
 
 
 (defn handle [game-state]

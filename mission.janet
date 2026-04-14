@@ -1,35 +1,32 @@
 (import ./location :as location)
 (import /items :as items)
 (import pat :as pat)
-(import /tasks :as tasks :fresh true)
+(import /tasks :as tasks)
 
 (use ./utils)
 
 
 (defn notify [event-type event-data game-state]
   
-  (match [ event-type event-data ]
-    [:sprite-collision {:name "farmer"} ] (do
-					    (print "HELLO FARMER")
-					    (tasks/push {:action :remove :entity "3"})
-					    (print "TASKS PUSHED")
-					    )
-    
-    [:sprite-collision _ ]                  (print "=> HIT SOMETHING ELSE" )
-    [:area _ ] (prin "" )
-    [:multiply x y] (* x y)
-    [:divide x y] (/ x y)
-    (print "->>>>>>>>> NO MATCH: " event-type)))
+  (pat/match [ event-type event-data ]
+	     [:sprite-collision {:name "farmer"} ] (do
+						     (when (<= 1 (items/fetch-by-count game-state :name "egg"))
+						       (print "more than 1 eggs, handing them over to farmer")
+ 						       (tasks/push {:action :remove :item "egg"  })
+  						       (tasks/push {:action :add    :item "money" :value 1}))
+						     (print "HELLO FARMER"))
+	     [:sprite-collision _ ]                (print "=> HIT SOMETHING ELSE" )
+	     [:area  {:name "start-location"} ]    (print (length (tasks/all-tasks)))
+	     (ev/sleep 0)
+	     ))
+
+	     
+
+
 
   
   
 
 
-(defn give-reward [reward game-state]
-  (print "GIVING REWARD: " reward)
-  )
 
-# Function to check for mission completion
-(defn check-complete [game-state]
-  (print "ACTIVE MISSIONS"))
 
